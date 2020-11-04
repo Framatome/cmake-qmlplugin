@@ -23,7 +23,7 @@ endfunction()
 
 function(add_qmlplugin TARGET)
     set(options NO_AUTORCC NO_AUTOMOC)
-    set(oneValueArgs URI VERSION BINARY_DIR)
+    set(oneValueArgs URI VERSION BINARY_DIR INSTALL_DIR COMPONENT)
     set(multiValueArgs SOURCES QMLFILES)
     cmake_parse_arguments(QMLPLUGIN "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -33,9 +33,14 @@ function(add_qmlplugin TARGET)
         return()
     endif()
 
+    string(REPLACE "." "/" QMLPLUGIN_INSTALL_URI ${QMLPLUGIN_URI})
+
     ### Depending on project hierarchy, one might want to specify a custom binary dir
     if(NOT QMLPLUGIN_BINARY_DIR)
         set(QMLPLUGIN_BINARY_DIR ${CMAKE_BINARY_DIR})
+        set(QMLPLUGIN_PLUGINTYPES_DIR ${CMAKE_CURRENT_BINARY_DIR})
+    else()
+        set(QMLPLUGIN_PLUGINTYPES_DIR "${QMLPLUGIN_BINARY_DIR}/${QMLPLUGIN_INSTALL_URI}")
     endif()
 
     ### Source files
@@ -61,11 +66,15 @@ function(add_qmlplugin TARGET)
     ### Find location of qmlplugindump (stored in QMLPLUGINDUMP_BIN)
     FindQmlPluginDump()
     ### Find where to install QML Plugins (stored in QT_INSTALL_QML)
-    FindQtInstallQml()
+    if(NOT QMLPLUGIN_INSTALL_DIR)
+        FindQtInstallQml()
+    else()
+        set(QT_INSTALL_QML ${QMLPLUGIN_INSTALL_DIR})
+    endif()
 
     set(COPY_QMLDIR_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/qmldir $<TARGET_FILE_DIR:${TARGET}>/qmldir)
     set(COPY_QMLFILES_COMMAND ${CMAKE_COMMAND} -E copy ${QMLPLUGIN_QMLFILES} $<TARGET_FILE_DIR:${TARGET}>)
-    set(GENERATE_QMLTYPES_COMMAND ${QMLPLUGINDUMP_BIN} -nonrelocatable ${QMLPLUGIN_URI} ${QMLPLUGIN_VERSION} ${QMLPLUGIN_BINARY_DIR} > ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes)
+    set(GENERATE_QMLTYPES_COMMAND ${QMLPLUGINDUMP_BIN} -nonrelocatable ${QMLPLUGIN_URI} ${QMLPLUGIN_VERSION} ${QMLPLUGIN_BINARY_DIR} -output ${QMLPLUGIN_PLUGINTYPES_DIR}/plugin.qmltypes)
 
     ### Copy qmldir from project source to binary dir
     add_custom_command(
@@ -91,20 +100,36 @@ function(add_qmlplugin TARGET)
         POST_BUILD
         COMMAND ${GENERATE_QMLTYPES_COMMAND}
         COMMENT "Generating plugin.qmltypes"
+        BYPRODUCTS ${QMLPLUGIN_PLUGINTYPES_DIR}/plugin.qmltypes
     )
-
-    string(REPLACE "." "/" QMLPLUGIN_INSTALL_URI ${QMLPLUGIN_URI})
 
     ### Install library
-    install(TARGETS ${TARGET}
-        DESTINATION ${QT_INSTALL_QML}/${QMLPLUGIN_INSTALL_URI}
-    )
+    if (QMLPLUGIN_COMPONENT)
+        install(TARGETS ${TARGET}
+            DESTINATION ${QT_INSTALL_QML}/${QMLPLUGIN_INSTALL_URI}
+            COMPONENT ${QMLPLUGIN_COMPONENT}
+        )
+    else()
+        install(TARGETS ${TARGET}
+            DESTINATION ${QT_INSTALL_QML}/${QMLPLUGIN_INSTALL_URI}
+        )
+    endif()
 
     ### Install aditional files
-    install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/qmldir
-        ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
-        ${QMLPLUGIN_QMLFILES}
-        DESTINATION ${QT_INSTALL_QML}/${QMLPLUGIN_INSTALL_URI}
-    )
+    if (QMLPLUGIN_COMPONENT)
+        install(FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/qmldir
+            ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
+            ${QMLPLUGIN_QMLFILES}
+            DESTINATION ${QT_INSTALL_QML}/${QMLPLUGIN_INSTALL_URI}
+            COMPONENT ${QMLPLUGIN_COMPONENT}
+        )
+    else()
+        install(FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/qmldir
+            ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
+            ${QMLPLUGIN_QMLFILES}
+            DESTINATION ${QT_INSTALL_QML}/${QMLPLUGIN_INSTALL_URI}
+        )
+    endif()
 endfunction()

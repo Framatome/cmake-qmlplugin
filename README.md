@@ -4,7 +4,7 @@ By using `add_qmlplugin( ... )`, the build system will
 * Compile the sources
 * Copy `qmldir` and all specified QML-files to build output
 * Run `qmlplugindump` on the generated plugin and produce `plugin.qmltypes` in the build output
-* Add install targets which will install the plugin and all additional files to the `QT_INSTALL_QML` path
+* Add install targets which will install the plugin and all additional files to INSTALL_DIR or `QT_INSTALL_QML` path if INSTALL_DIR is not supplied
 
 ## Requirements
 * `qmake` must be in `PATH`
@@ -26,6 +26,10 @@ add_qmlplugin(<name>
         [<binary_dir>]
     NO_AUTORCC
     NO_AUTOMOC
+    INSTALL_DIR
+        [<install_dir>]
+    COMPONENT
+        [component]
 )
 ```
 #### Explanation
@@ -36,8 +40,10 @@ add_qmlplugin(<name>
 | `SOURCES`    | Should contain all the C++ sources to be compiled with this plugin. |
 | `QMLFILES`   | Should contain all QML files which should be copied to the binary directory and eventually installed to `[QT_INSTALL_QML]` directory. |
 | `BINARY_DIR` | Used to specify the output directory when building. This should be the directory which is a parent to `org/mycompany/components` in order for `qmlplugindump` to work properly. If not explicitly set, it will default to `${CMAKE_CURRENT_BINARY_DIR}`. |
-| `NO_AUTORCC` | Turn off automatic RCC |
-| `NO_AUTOMOC` | Turn off automatic MOC |
+| `NO_AUTORCC` | Turn off automatic RCC. |
+| `NO_AUTOMOC` | Turn off automatic MOC. |
+| `INSTALL_DIR`| Alternate installation directory. `[QT_INSTALL_QML]` is used if this parameter is empty or not supplied. |
+| `COMPONENT`  | If supplied install to the specified component using a multi-component installer. |
 
 ### Example
 ```cmake
