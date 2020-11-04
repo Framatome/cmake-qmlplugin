@@ -118,16 +118,16 @@ function(add_qmlplugin TARGET)
     ### Install aditional files
     if (QMLPLUGIN_COMPONENT)
         install(FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/qmldir
-            ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
+            ${CMAKE_CURRENT_LIST_DIR}/qmldir
+            ${QMLPLUGIN_PLUGINTYPES_DIR}/plugin.qmltypes
             ${QMLPLUGIN_QMLFILES}
             DESTINATION ${QT_INSTALL_QML}/${QMLPLUGIN_INSTALL_URI}
             COMPONENT ${QMLPLUGIN_COMPONENT}
         )
     else()
         install(FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/qmldir
-            ${CMAKE_CURRENT_BINARY_DIR}/plugin.qmltypes
+            ${CMAKE_CURRENT_LIST_DIR}/qmldir
+            ${QMLPLUGIN_PLUGINTYPES_DIR}/plugin.qmltypes
             ${QMLPLUGIN_QMLFILES}
             DESTINATION ${QT_INSTALL_QML}/${QMLPLUGIN_INSTALL_URI}
         )
