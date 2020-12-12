@@ -95,13 +95,23 @@ function(add_qmlplugin TARGET)
     endif()
 
     ### Create command to generate plugin.qmltypes after build
-    add_custom_command(
-        TARGET ${TARGET}
-        POST_BUILD
-        COMMAND ${GENERATE_QMLTYPES_COMMAND}
-        COMMENT "Generating plugin.qmltypes"
-        BYPRODUCTS ${QMLPLUGIN_PLUGINTYPES_DIR}/plugin.qmltypes
-    )
+    if (WIN32)
+        add_custom_command(
+            TARGET ${TARGET}
+            POST_BUILD
+            COMMAND if 1==$<CONFIG:Release> ${GENERATE_QMLTYPES_COMMAND}
+            COMMENT "Generating plugin.qmltypes"
+            BYPRODUCTS ${QMLPLUGIN_PLUGINTYPES_DIR}/plugin.qmltypes
+        )
+    else()
+        add_custom_command(
+            TARGET ${TARGET}
+            POST_BUILD
+            COMMAND ${GENERATE_QMLTYPES_COMMAND}
+            COMMENT "Generating plugin.qmltypes"
+            BYPRODUCTS ${QMLPLUGIN_PLUGINTYPES_DIR}/plugin.qmltypes
+        )
+    endif()
 
     ### Install library
     if (QMLPLUGIN_COMPONENT)
