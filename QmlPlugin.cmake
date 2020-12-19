@@ -1,10 +1,14 @@
 include(CMakeParseArguments)
 
+if(NOT QMAKE_EXECUTABLE)
+    set(QMAKE_EXECUTABLE qmake)
+endif()
+
 ### Finds where to qmlplugindump binary is installed
 ### Requires that 'qmake' directory is in PATH
 function(FindQmlPluginDump)
     execute_process(
-        COMMAND qmake -query QT_INSTALL_BINS
+        COMMAND ${QMAKE_EXECUTABLE} -query QT_INSTALL_BINS
         OUTPUT_VARIABLE QT_BIN_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
@@ -14,7 +18,7 @@ endfunction()
 ### Sets QT_INSTALL_QML to the directory where QML Plugins should be installed
 function(FindQtInstallQml)
     execute_process(
-        COMMAND qmake -query QT_INSTALL_QML
+        COMMAND ${QMAKE_EXECUTABLE} -query QT_INSTALL_QML
         OUTPUT_VARIABLE PROC_RESULT
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
